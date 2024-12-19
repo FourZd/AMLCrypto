@@ -1,0 +1,57 @@
+services:
+  api_service:
+    container_name: api_service
+    build:
+      context: ../api_service
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../api_service/:/app
+    env_file:
+      - ../api_service/.env
+
+  etl_service:
+    container_name: etl_service
+    build:
+      context: ../etl_service
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - redis
+    volumes:
+      - ../etl_service/:/app
+    env_file:
+      - ../etl_service/.env
+
+  db:
+    container_name: db
+    image: postgres:alpine
+    restart: always
+    env_file:
+      - ../api_service/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    container_name: redis
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+    env_file: 
+      - ../api_service/.env
+    command: >
+      sh -c 'redis-server --requirepass "$$REDIS_PASSWORD"'
+    restart: always
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
