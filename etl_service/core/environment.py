@@ -1,4 +1,3 @@
-import os
 from pydantic_settings import BaseSettings
 
 
@@ -17,13 +16,11 @@ class Settings(BaseSettings):
     RABBITMQ_PORT: int
 
     class Config:
-        env_file = os.getenv("ENV_FILE")
         env_file_encoding = "utf-8"
 
 
 def get_settings() -> Settings:
-    settings = Settings()
-    return settings
+    return Settings()
 
 
 env = get_settings()

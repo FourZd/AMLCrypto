@@ -4,18 +4,10 @@ WORKDIR /app
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        build-essential \
-        gcc \
-        g++ \
-        libpq-dev \
-        libssl-dev \
-        libblas-dev \
-        liblapack-dev \
-        libc-dev \
-        gettext \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml poetry.lock /app/
+
 RUN pip install poetry \
     && poetry config virtualenvs.create false \
     && poetry config installer.max-workers 10 \
@@ -24,5 +16,4 @@ RUN pip install poetry \
 
 COPY . /app/
 
-
-CMD ["poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "python3", "main.py"]

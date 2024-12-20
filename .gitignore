@@ -7,3 +7,12 @@ etl_service/schemas/__pycache__/dump_schemas.cpython-312.pyc
 .env.shared
 api_service/.env
 etl_service/.env
+api_service/core/__pycache__/container.cpython-312.pyc
+api_service/core/__pycache__/database.cpython-312.pyc
+api_service/core/__pycache__/environment.cpython-312.pyc
+api_service/core/__pycache__/logger.cpython-312.pyc
+api_service/core/__pycache__/redis_client.cpython-312.pyc
+api_service/core/__pycache__/uow.cpython-312.pyc
+etl_service/services/__pycache__/transaction_observer.cpython-312.pyc
+etl_service/core/__pycache__/environment.cpython-312.pyc
+api_service/__pycache__/main.cpython-312.pyc

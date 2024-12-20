@@ -21,7 +21,7 @@ class Container(containers.DeclarativeContainer):
 
     redis_pool = providers.Singleton(
         RedisPool,
-        redis_url=f"redis://:{env.redis_password}@{env.redis_host}:{env.redis_port}/{env.redis_db}",
+        redis_url=f"redis://:{env.REDIS_PASSWORD}@{env.REDIS_HOST}:{env.REDIS_PORT}/{env.REDIS_DB}",
     )
 
 
