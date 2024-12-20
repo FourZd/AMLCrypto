@@ -33,6 +33,23 @@ services:
       - ../etl_service/.env
       - ../.env.shared
 
+  tx_consumer_service:
+    container_name: tx_consumer_service
+    build:
+      context: ../tx_consumer_service
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      - db
+      - redis
+      - rabbitmq
+    volumes:
+      - ../tx_consumer_service/:/app
+    env_file:
+      - ../tx_consumer_service/.env
+      - ../.env.db
+      - ../.env.shared
+      
   db:
     container_name: db
     image: postgres:alpine

@@ -19,3 +19,6 @@ api_service/__pycache__/main.cpython-312.pyc
 etl_service/schemas/__pycache__/transaction_schemas.cpython-312.pyc
 etl_service/core/__pycache__/logger.cpython-312.pyc
 etl_service/core/__pycache__/redis_client.cpython-312.pyc
+transaction_consumer_service/core/__pycache__/environment.cpython-312.pyc
+transaction_consumer_service/core/__pycache__/logger.cpython-312.pyc
+transaction_consumer_service/core/__pycache__/redis_client.cpython-312.pyc

@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "tx-consumer-service"
+version = "0.1.0"
+description = ""
+authors = ["FourZd <shogo.ryaskov@gmail.com>"]
+readme = "README.md"
+packages = [{include = "tx_consumer_service"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+aio-pika = "^9.5.4"
+sqlalchemy = "^2.0.36"
+pydantic = "^2.10.4"
+pydantic-settings = "^2.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
