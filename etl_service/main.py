@@ -42,7 +42,7 @@ async def main():
             break
 
         if _ == 1:
-            logger.info("FOR DEVELOPING REASONS, IT WONT DOWNLOAD EVERY DUMP, ONLY THE FIRST ONE")
+            logger.info("FOR DEVELOPING REASONS, IT WONT DOWNLOAD EVERY DUMP, ONLY THE FIRST TWO")
             break
 
     logger.info("Finished processing dumps, starting observer")
