@@ -8,12 +8,14 @@ services:
     depends_on:
       - db
       - redis
+      - rabbitmq
     ports:
       - "8000:8000"
     volumes:
       - ../api_service/:/app
     env_file:
       - ../api_service/.env
+      - ../.env.db
 
   etl_service:
     container_name: etl_service
@@ -27,17 +29,18 @@ services:
       - ../etl_service/:/app
     env_file:
       - ../etl_service/.env
+      - ../.env.shared
 
   db:
     container_name: db
     image: postgres:alpine
     restart: always
-    env_file:
-      - ../api_service/.env
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ../.env.db
 
   redis:
     container_name: redis
@@ -45,13 +48,26 @@ services:
     ports:
       - "6379:6379"
     env_file: 
-      - ../api_service/.env
+      - ../.env.shared
     command: >
       sh -c 'redis-server --requirepass "$$REDIS_PASSWORD"'
     restart: always
     volumes:
       - redis_data:/data
 
+  rabbitmq:
+    container_name: rabbitmq
+    image: "rabbitmq:management-alpine"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: always
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    env_file:
+      - ../.env.shared
+
 volumes:
   postgres_data:
   redis_data:
+  rabbitmq_data:
