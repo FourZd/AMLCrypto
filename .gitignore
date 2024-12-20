@@ -34,3 +34,16 @@ api_service/transactions/__pycache__/services.cpython-312.pyc
 etl_service/dumps/blockchair_ethereum_transactions_20150730.tsv.gz
 tx_consumer_service/core/__pycache__/environment.cpython-312.pyc
 tx_consumer_service/core/__pycache__/environment.cpython-312.pyc
+tx_consumer_service/.env
+tx_consumer_service/__pycache__/consumer.cpython-312.pyc
+tx_consumer_service/__pycache__/models.cpython-312.pyc
+tx_consumer_service/__pycache__/repositories.cpython-312.pyc
+tx_consumer_service/__pycache__/schemas.cpython-312.pyc
+tx_consumer_service/__pycache__/services.cpython-312.pyc
+tx_consumer_service/core/__pycache__/database.cpython-312.pyc
+tx_consumer_service/core/__pycache__/environment.cpython-312.pyc
+tx_consumer_service/core/__pycache__/logger.cpython-312.pyc
+tx_consumer_service/core/__pycache__/repositories.cpython-312.pyc
+tx_consumer_service/core/__pycache__/environment.cpython-312.pyc
+tx_consumer_service/core/__pycache__/logger.cpython-312.pyc
+api_service/alembic/versions/__pycache__/408e1c145975_add_transactions.cpython-312.pyc

@@ -5,6 +5,8 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from core.database import BaseModel
 from core.environment import env
+from transactions.models import *
+
 
 config = context.config
 DATABASE_URL = f"{env.DATABASE_DIALECT}+psycopg2://{env.POSTGRES_USER}:{env.POSTGRES_PASSWORD}@{env.POSTGRES_HOSTNAME}:{env.POSTGRES_PORT}/{env.POSTGRES_DB}"

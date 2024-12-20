@@ -14,7 +14,7 @@ async def main():
         f"{env.DATABASE_DIALECT}+asyncpg://{env.POSTGRES_USER}:{env.POSTGRES_PASSWORD}@{env.POSTGRES_HOSTNAME}:{env.POSTGRES_PORT}/{env.POSTGRES_DB}"
     )
     tx_service = service_factory(
-        repository_factory(db.provided.session)
+        repository_factory(db.session)
     )
 
     consumer = Consumer(
