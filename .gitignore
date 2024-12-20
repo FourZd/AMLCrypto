@@ -5,3 +5,5 @@ etl_service/services/__pycache__/message_broker.cpython-312.pyc
 etl_service/schemas/__pycache__/dump_schemas.cpython-312.pyc
 .env.db
 .env.shared
+api_service/.env
+etl_service/.env

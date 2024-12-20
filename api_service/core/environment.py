@@ -9,10 +9,15 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int
     POSTGRES_HOSTNAME: str
     DATABASE_DIALECT: str
-
+    
+    RABBITMQ_DEFAULT_USER: str
+    RABBITMQ_DEFAULT_PASS: str
+    RABBITMQ_HOST: str
+    RABBITMQ_PORT: int
+    
     REDIS_HOST: str
     REDIS_PORT: int
-    REDIS_DB: str
+    REDIS_DB: int
     REDIS_PASSWORD: str
 
     class Config:
