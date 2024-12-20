@@ -1,6 +1,8 @@
 import pika
-from schemas.dump_schemas import Transaction
+from schemas.transaction_schemas import Transaction
 from typing import List
+from core.logger import logger
+import json
 
 
 class MessageBroker:
@@ -17,7 +19,7 @@ class MessageBroker:
         self.password = password
         self.host = host
         self.port = port
-
+        
         self.connection = None
         self.channel = None
 
@@ -36,7 +38,7 @@ class MessageBroker:
 
     def publish_to_queue(self, transactions: List['Transaction'], queue_name: str) -> None:
         """
-        Publishes messages to a RabbitMQ queue in JSON format.
+        Publishes a batch of transactions to a RabbitMQ queue in JSON format.
 
         :param transactions: List of transactions to publish
         :param queue_name: Name of the queue
@@ -44,17 +46,18 @@ class MessageBroker:
         if not self.channel:
             raise RuntimeError("No connection established. Call `connect` first.")
 
-        # Declare the queue to ensure it exists
+        logger.info("Declaring transaction queue")
         self.channel.queue_declare(queue=queue_name)
 
-        for transaction in transactions:
-            # Serialize the transaction to JSON using Pydantic's json() method
-            transaction_json = transaction.json()
-            try:
-                self.channel.basic_publish(exchange='', routing_key=queue_name, body=transaction_json)
-            except Exception as e:
-                print(e)
-                print("Ошибка в паблише")
+        logger.info("Serializing transactions to JSON")
+        try:
+            # Сериализуем список транзакций в JSON
+            transactions_json = json.dumps([transaction.json() for transaction in transactions])
+            logger.info("Publishing transactions batch to MQ")
+            self.channel.basic_publish(exchange='', routing_key=queue_name, body=transactions_json)
+            logger.info("Batch published successfully!")
+        except Exception as e:
+            logger.error(f"Failed to publish transactions batch: {e}")
                 
     def close_connection(self) -> None:
         """

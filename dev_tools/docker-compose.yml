@@ -26,6 +26,7 @@ services:
     restart: always
     depends_on:
       - redis
+      - rabbitmq
     volumes:
       - ../etl_service/:/app
     env_file:

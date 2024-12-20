@@ -8,27 +8,18 @@ class Transaction(BaseModel):
     index: Optional[str] = None
     hash: Optional[str] = None
     time: datetime
-    failed: int
-    type: str
+    type: Optional[str] = None
     sender: Optional[str] = None
     recipient: str
-    call_count: int
-    value: str
-    value_usd: float
-    internal_value: str
-    internal_value_usd: float
-    fee: int
-    fee_usd: float
-    gas_used: int
+    value: int
+    fee: Optional[int] = None
     gas_limit: int
-    gas_price: int
-    input_hex: Optional[float] = None
+    gas_price: Optional[int] = None
+    input_hex: Optional[str] = None
     nonce: int
-    v: Optional[float] = None
-    r: Optional[float] = None
-    s: Optional[float] = None
 
     class Config:
         json_encoders = {
             datetime: lambda v: v.isoformat(),
         }
+

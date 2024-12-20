@@ -3,48 +3,53 @@ from services.message_broker import MessageBroker
 from services.transaction_observer import TransactionObserver
 import asyncio
 from core.environment import env
-
+from core.logger import logger
+from core.redis_client import RedisPool
 
 async def main():
-    print("Entering main")
+    redis_pool = RedisPool(f"redis://:{env.REDIS_PASSWORD}@{env.REDIS_HOST}:{env.REDIS_PORT}/{env.REDIS_DB}")
 
-    # Использовал дамп транзакций Ethereum за 30 июля 2015 года, т.к. он небольшой и быстро загружается.
-    # При необходимости могу сделать также чтобы оно парсило все дампы с blockchair, храня информацию о последней запаршенной дате.
-    # однако тестирование подобной штуки очень затруднилось бы тем, что блокчейр выдает 402 ошибку без VPNа, а с впном скачать даже 50 мб крайне долго(
-    DUMP_URL = env.DUMP_LINK
-    print("Downloading dump")
-    # Загружаем и обрабатываем дамп файл.
-    dumper = Dumper(DUMP_URL, "dumps")
-    await dumper.download()
-    print("Dump downloaded")
-    dump_transactions = dumper.process()
-    print("Processing dump")
-    # Подключаемся к RabbitMQ
+    dumper = Dumper(env.DUMP_LINK, "dumps", redis_pool)
+    last_processed_date = await dumper.get_last_processed_date()
+    if last_processed_date:
+        current_date = dumper.get_next_date(last_processed_date)
+    else:
+        current_date = env.DUMP_LINK.split("_")[-1].split(".")[0]
+
     queue_name = "ethereum_transactions"
-    print(queue_name)
     message_broker = MessageBroker(
         user=env.RABBITMQ_DEFAULT_USER,
         password=env.RABBITMQ_DEFAULT_PASS,
         host=env.RABBITMQ_HOST,
         port=env.RABBITMQ_PORT
     )
-    print("Initialized message broker")
     message_broker.connect()
-    print("Connected to message broker")
-    try:
-        message_broker.publish_to_queue(dump_transactions, queue_name)
-        print("Published dump to the queue")
-    except Exception as e:
-        error_message = str(e)
-        print("Ошибка:", error_message[:500])
-    # Подключаемся к ноде Ethereum
-    print(env.INFURA_TOKEN)
+    
+    for _ in range(2):  # Только два дампа для отладки
+        dump_url = f"https://gz.blockchair.com/ethereum/transactions/blockchair_ethereum_transactions_{current_date}.tsv.gz"
+        try:
+            dumper.dump_url = dump_url
+            await dumper.download()
+            logger.info("Dump downloaded")
+            dump_transactions = dumper.process()
+            logger.info("Processing dump transactions")
+            message_broker.publish_to_queue(dump_transactions, queue_name)
+            logger.info("Published dump to the queue")
+            await dumper.set_last_processed_date(current_date)
+            current_date = dumper.get_next_date(current_date)
+        except Exception as e:
+            logger.error(f"Failed to process dump for date {current_date}: {e}")
+            break
+
+        if _ == 1:
+            logger.info("FOR DEVELOPING REASONS, IT WONT DOWNLOAD EVERY DUMP, ONLY THE FIRST ONE")
+            break
+
+    logger.info("Finished processing dumps, starting observer")
     provider_url = f"wss://mainnet.infura.io/ws/v3/{env.INFURA_TOKEN}"
-    print("provider url defined")
     observer = TransactionObserver(message_broker)
-    print("Initialized observer")
-    await observer.observe(provider_url)
-    print("Observed")
+    logger.info("Observing...")
+    await observer.observe(provider_url, queue_name)
 
 
 if __name__ == "__main__":
