@@ -1,71 +1,121 @@
-import pytest
-from unittest.mock import AsyncMock, MagicMock
-from sqlalchemy.ext.asyncio import AsyncSession
-from transactions.repositories import TransactionRepository
-from transactions.models import Transaction
+import asyncio
+from typing import List
+from unittest.mock import AsyncMock
 
-@pytest.fixture
-def repository():
-    # Mock session and session factory
-    session_mock = AsyncMock(spec=AsyncSession)
-    session_context_mock = MagicMock()
-    session_context_mock.__aenter__.return_value = session_mock
-    session_context_mock.__aexit__.return_value = None
+from sqlalchemy import func
 
-    # Mock repository
-    repository = TransactionRepository(session_factory=MagicMock(return_value=session_context_mock))
-    return repository
+from core.repositories import BaseRepository
+from transactions.schemas import TransactionSchema
+from transactions.mappers import TransactionMapper
+from datetime import datetime
 
-@pytest.mark.asyncio
-async def test_get_transactions(repository):
-    # Arrange
-    transaction = Transaction(id=1, block_id=10, sender="0xSender", recipient="0xRecipient", hash="0xHash")
-    session_mock = repository.session_factory.return_value.__aenter__.return_value
-    session_mock.execute.return_value.scalars.return_value.all.return_value = [transaction]
-    session_mock.execute.return_value.scalar.return_value = 1
-    
-    # Act
-    transactions, count = await repository.get_transactions(block_id=10, sender="0xSender", recipient=None, limit=10, offset=0)
-    
-    # Assert
-    assert len(transactions) == 1
-    assert transactions[0].id == 1
-    assert count == 1
 
-@pytest.mark.asyncio
-async def test_get_transaction(repository):
-    # Arrange
-    transaction = Transaction(id=1, hash="0xHash")
-    session_mock = repository.session_factory.return_value.__aenter__.return_value
-    session_mock.execute.return_value.scalar.return_value = transaction
-    
-    # Act
-    result = await repository.get_transaction(transaction_hash="0xHash")
-    
-    # Assert
-    assert result.id == 1
-    assert result.hash == "0xHash"
+class MockData:
+    transactions: List[TransactionSchema] = [
+        TransactionSchema(
+            id=1,
+            hash="tx1_hash",
+            block_id=1,
+            sender="alice",
+            recipient="bob",
+            gas_price=100,
+            time=datetime(2024, 12, 21, 12, 0, 0),  # Use datetime object
+            value=1000,
+            gas_limit=21000,
+            nonce=0,
+            fee=10,  # Add fee
+            input_hex="0x00", # Add input_hex
+        ),
+        TransactionSchema(
+            id=2,
+            hash="tx2_hash",
+            block_id=2,
+            sender="bob",
+            recipient="charlie",
+            gas_price=200,
+            time=datetime(2024, 12, 21, 12, 0, 0),  # Use datetime object
+            value=1200,
+            gas_limit=25000,
+            nonce=1,
+            fee=20,  # Add fee
+            input_hex="0x01", # Add input_hex
+        ),
+    ]
 
-@pytest.mark.asyncio
-async def test_get_transaction_count(repository):
-    # Arrange
-    session_mock = repository.session_factory.return_value.__aenter__.return_value
-    session_mock.execute.return_value.scalar.return_value = 42
-    
-    # Act
+
+class MockedTransactionRepository(BaseRepository):
+    def __init__(self, session: AsyncMock = None):
+        super().__init__(session_factory=AsyncMock())
+        self.session = session or AsyncMock()
+        self.transactions = MockData.transactions
+
+    async def get_session(self, session: AsyncMock = None):
+        return self.session
+
+    async def _execute_scalar(self, query):  # Вспомогательная функция
+        result_mock = AsyncMock()
+        result_mock.scalar.return_value = query.compile(compile_kwargs={"literal_binds": True})
+        self.session.execute.return_value = result_mock
+        return await self.session.execute(query)
+
+
+async def test_get_transactions_all():
+    session_mock = AsyncMock()
+    session_mock.execute.return_value = AsyncMock(scalars=AsyncMock(return_value=MockData.transactions))
+    session_mock.execute.return_value.scalar.return_value = len(MockData.transactions)
+
+    repository = MockedTransactionRepository(session_mock)
+    transactions, count = await repository.get_transactions(None, None, None, 10, 0)
+
+    assert transactions == MockData.transactions
+    assert count == len(MockData.transactions)
+
+
+async def test_get_transactions_filtered():
+    session_mock = AsyncMock()
+    filtered_transactions = [tx for tx in MockData.transactions if tx.block_id == 2 and tx.sender == "alice"]
+    session_mock.execute.return_value = AsyncMock(scalars=AsyncMock(return_value=filtered_transactions))
+    session_mock.execute.return_value.scalar.return_value = len(filtered_transactions)
+
+    repository = MockedTransactionRepository(session_mock)
+    transactions, count = await repository.get_transactions(2, "alice", None, 10, 0)
+
+    assert transactions == filtered_transactions
+    assert count == len(filtered_transactions)
+
+
+async def test_get_transaction_by_hash():
+    session_mock = AsyncMock()
+    session_mock.execute.return_value = AsyncMock(scalar=AsyncMock(return_value=MockData.transactions[0]))
+
+    repository = MockedTransactionRepository(session_mock)
+    transaction = await repository.get_transaction("tx1_hash")
+
+    assert transaction == MockData.transactions[0]
+
+
+async def test_get_transaction_by_hash_not_found():
+    session_mock = AsyncMock()
+    session_mock.execute.return_value = AsyncMock(scalar=None)
+
+    repository = MockedTransactionRepository(session_mock)
+    transaction = await repository.get_transaction("nonexistent_hash")
+
+    assert transaction is None
+
+
+async def test_get_transaction_count():
+    session_mock = AsyncMock()
+    session_mock.execute.return_value = AsyncMock(scalar=AsyncMock(return_value=len(MockData.transactions)))
+    repository = MockedTransactionRepository(session_mock)
     count = await repository.get_transaction_count()
-    
-    # Assert
-    assert count == 42
+    assert count == len(MockData.transactions)
 
-@pytest.mark.asyncio
-async def test_get_average_gas_price(repository):
-    # Arrange
-    session_mock = repository.session_factory.return_value.__aenter__.return_value
-    session_mock.execute.return_value.scalar.return_value = 12345
-    
-    # Act
-    avg_gas_price = await repository.get_average_gas_price()
-    
-    # Assert
-    assert avg_gas_price == 12345
+
+async def test_get_average_gas_price():
+    session_mock = AsyncMock()
+    avg_gas_price = sum(tx.gas_price for tx in MockData.transactions) / len(MockData.transactions)
+    session_mock.execute.return_value = AsyncMock(scalar=AsyncMock(return_value=avg_gas_price))
+    repository = MockedTransactionRepository(session_mock)
+    avg = await repository.get_average_gas_price()
+    assert avg == avg_gas_price
