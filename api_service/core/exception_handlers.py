@@ -4,9 +4,12 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+# The file contains exception handlers for FastAPI application.
+# The exception handlers are used to catch exceptions and return a proper formatted response.
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    
     errors = {"non_field_error": []}
     for error in exc.errors():
         field_path = ".".join(

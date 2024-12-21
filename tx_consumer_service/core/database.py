@@ -14,6 +14,7 @@ class BaseModel(DeclarativeBase):
 
 
 class Database:
+    """Database & session factory setup"""
     def __init__(self, db_url: str) -> None:
         self._engine = create_async_engine(db_url, echo=True)
         self._session_factory = async_sessionmaker(
@@ -36,5 +37,5 @@ class Database:
 
 
 def database_factory(db_url: str) -> Database:
-    """Фабрика для создания базы данных"""
+    """Factory function to create a database instance."""
     return Database(db_url)

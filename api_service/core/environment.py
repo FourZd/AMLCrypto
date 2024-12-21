@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    """Core environment using pydantic settings."""
     POSTGRES_DB: str
     POSTGRES_PASSWORD: str
     POSTGRES_USER: str

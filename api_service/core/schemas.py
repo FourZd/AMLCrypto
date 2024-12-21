@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+# Defined base schemas for inheritance
+
 
 class StatusOkSchema(BaseModel):
     status: str = "ok"

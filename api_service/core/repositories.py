@@ -7,12 +7,19 @@ from core.logger import logger
 
 class BaseRepository:
     def __init__(self, session_factory):
-        """Инициализация с фабрикой сессий."""
         self.session_factory = session_factory
 
     @asynccontextmanager
     async def get_session(self, session: AsyncSession = None):
-        """Контекстный менеджер для работы с сессией."""
+        """
+        Provide a session context for database operations.
+
+        Args:
+            session (AsyncSession, optional): Existing session.
+
+        Yields:
+            AsyncSession: SQLAlchemy async session instance.
+        """
         if session:
             logger.info("Using existing session")
             yield session

@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    """Core environment using pydantic settings."""
     RABBITMQ_QUEUE_NAME: str
 
     RABBITMQ_DEFAULT_USER: str

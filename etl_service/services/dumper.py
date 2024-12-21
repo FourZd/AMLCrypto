@@ -22,6 +22,7 @@ class Dumper:
         os.makedirs(self.output_dir, exist_ok=True)
 
     async def download(self) -> None:
+        """Downloads the dump file from the provided URL"""
         async with aiohttp.ClientSession() as session:
             async with session.get(self.dump_url) as response:
                 if response.status == 200:
@@ -31,35 +32,37 @@ class Dumper:
                     raise Exception(f"Failed to download dump, status: {response.status}")
         
     def process(self) -> List[Transaction]:
+        """Processes the dump file and returns a list of Transaction DTOs"""
         df = pd.read_csv(self.output_file, compression='gzip', sep='\t')
 
-        # Ensure input_hex is treated as a string
         if 'input_hex' in df.columns:
             df['input_hex'] = df['input_hex'].astype(str)
 
-        # Convert DataFrame rows to dictionary records
         transactions = df.to_dict(orient='records')
 
-        # Map dictionary records to Transaction DTOs
         transaction_dtos = [Transaction(**tx) for tx in transactions]
         return transaction_dtos
 
     async def get_last_processed_date(self) -> str:
+        """Returns the last processed date from the Redis"""
         async with self.redis_pool.get_redis() as redis:
             date = await redis.get("last_processed_date")
             return date.decode("utf-8") if date else None
 
     async def set_last_processed_date(self, date: str) -> None:
+        """Sets the last processed date in the Redis"""
         async with self.redis_pool.get_redis() as redis:
             await redis.set("last_processed_date", date)
 
     @staticmethod
     def get_next_date(current_date: str) -> str:
+        """Returns the next date in the format YYYYMMDD"""
         current_date_obj = datetime.strptime(current_date, "%Y%m%d")
         next_date_obj = current_date_obj + timedelta(days=1)
         return next_date_obj.strftime("%Y%m%d")
 
     def cleanup(self) -> None:
+        """Deletes the output file if it exists"""
         if os.path.exists(self.output_file):
             os.remove(self.output_file)
             logger.info(f"File {self.output_file} has been deleted")

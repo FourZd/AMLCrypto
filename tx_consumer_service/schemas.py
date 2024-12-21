@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 
 class Transaction(BaseModel):
+    
     block_id: int
     index: Optional[str] = None
     hash: Optional[str] = None

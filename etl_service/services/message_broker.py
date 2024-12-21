@@ -25,7 +25,7 @@ class MessageBroker:
 
     async def connect(self) -> None:
         """
-        Устанавливает соединение с RabbitMQ.
+        Connects to RabbitMQ using the provided credentials.
         """
         logger.info("Connecting to RabbitMQ")
         self.connection = await aio_pika.connect_robust(

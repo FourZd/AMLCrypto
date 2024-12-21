@@ -11,10 +11,10 @@ class TransactionObserver:
         self.message_broker = message_broker
 
     async def observe(self, provider_url: str, queue_name: str):
-        """Асинхронный метод для наблюдения за завершёнными транзакциями"""
+        """Async method to observe new blocks and publish transactions to the message broker"""
         async with AsyncWeb3(WebSocketProvider(provider_url)) as w3:
             logger.info("Subscribing to new heads")
-            subscription = await w3.eth.subscribe('newHeads')  # Подписка на новые блоки
+            subscription = await w3.eth.subscribe('newHeads')
             logger.info(f"Subscription confirmed {subscription}")
             async for response in w3.socket.process_subscriptions():
                 logger.info(f"Response received! {response}")
@@ -27,7 +27,7 @@ class TransactionObserver:
                     logger.warning("Block hash is missing in the response")
 
     async def handle_new_block(self, w3: AsyncWeb3, block_hash: str):
-        """Обработка нового блока"""
+        """Handles a new block, gets transactions and formats them"""
         try:
             logger.info(f"Getting info about the block {block_hash}")
             block = await w3.eth.get_block(block_hash, full_transactions=True)
@@ -43,7 +43,7 @@ class TransactionObserver:
             logger.error(f"Error processing block {block_hash}: {e}")
 
     def format_transaction(self, block, transaction):
-        """Форматирует данные транзакции в нужный формат"""
+        """Formats a transaction to a Transaction DTO"""
         try:
             return Transaction(
                 block_id=block.number,

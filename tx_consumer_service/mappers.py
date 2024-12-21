@@ -3,9 +3,12 @@ from models import Transaction
 
 
 class TransactionMapper:
-
+    
     @staticmethod
     def from_schema_to_orm(transaction_dto: TransactionSchema) -> Transaction:
+        """
+        Convert transaction DTO (pydantic schema) to transaction ORM model
+        """
         return Transaction(
             block_id=transaction_dto.block_id,
             index=transaction_dto.index,

@@ -8,14 +8,22 @@ class TransactionService:
         self.transaction_repository = transaction_repository
 
     async def get_existing_transaction_hashes(self, transaction_hashes: List[str]) -> List[str]:
-        """Получить список хешей транзакций, которые уже есть в базе"""
+        """
+        Gets existing transaction hashes from the database
+        
+        Args:
+            transaction_hashes (List[str]): List of transaction hashes to check
+        
+        Returns:
+            List[str]: List of transaction hashes that are already in the database
+        """
         return await self.transaction_repository.get_existing_transaction_hashes(transaction_hashes)
 
     async def add(self, transactions: List[TransactionSchema]) -> None:
-        """Добавить транзакции в базу"""
+        """Adds transactions to the database"""
         await self.transaction_repository.add(transactions)
 
 
 def service_factory(transaction_repository: TransactionRepository):
-    """Фабрика для создания сервиса, внедряя зависимость от репозитория"""
+    """Factory for creating a service, injecting a dependency on the repository"""
     return TransactionService(transaction_repository)
