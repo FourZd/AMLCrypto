@@ -22,7 +22,7 @@ class TransactionObserver:
                 if block_hash:
                     logger.info(f"Handling new block {block_hash}")
                     formatted_transactions = await self.handle_new_block(w3, block_hash)
-                    self.message_broker.publish_to_queue(formatted_transactions, queue_name)
+                    await self.message_broker.publish_to_queue(formatted_transactions, queue_name)
                 else:
                     logger.warning("Block hash is missing in the response")
 

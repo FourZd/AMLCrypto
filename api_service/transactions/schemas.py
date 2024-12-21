@@ -2,6 +2,7 @@ from core.schemas import CountSchema, StatusOkSchema
 from datetime import datetime
 from typing import Optional, List
 from pydantic import BaseModel
+from decimal import Decimal
 
 
 class TransactionSchema(BaseModel):
@@ -28,7 +29,7 @@ class TransactionSchema(BaseModel):
 
 class TransactionStatsSchema(BaseModel):
     total_transactions: int
-    average_gas_price: int
+    average_gas_price: Decimal
 
 
 class GetTransactionResponse(StatusOkSchema):

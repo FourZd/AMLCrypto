@@ -11,26 +11,27 @@ class TransactionRepository(BaseRepository):
 
     async def get_transactions(self, block_id: int, sender: str, recipient: str, limit: int, offset: int) -> Tuple[List[TransactionSchema], int]:
         async with self.get_session() as session:
-
             base_query = select(Transaction)
-            
+
             if block_id:
                 base_query = base_query.where(Transaction.block_id == block_id)
             if sender:
                 base_query = base_query.where(Transaction.sender == sender)
             if recipient:
                 base_query = base_query.where(Transaction.recipient == recipient)
-            
-            count_query = base_query.with_only_columns(func.count())
+
+            count_query = select(func.count()).select_from(base_query.subquery())
             count_result = await session.execute(count_query)
             count = count_result.scalar()
-            
+
             paginated_query = base_query.limit(limit).offset(offset).order_by(Transaction.id.desc())
             result = await session.execute(paginated_query)
             transaction_entities = result.scalars().all()
+
             transactions = [TransactionMapper.from_orm_to_schema(tx) for tx in transaction_entities]
 
             return transactions, count
+
 
     async def get_transaction(self, transaction_hash: str) -> Optional[TransactionSchema]:
         async with self.get_session() as session:

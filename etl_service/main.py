@@ -24,7 +24,7 @@ async def main():
         host=env.RABBITMQ_HOST,
         port=env.RABBITMQ_PORT
     )
-    message_broker.connect()
+    await message_broker.connect()
     
     for _ in range(2):
         dump_url = f"https://gz.blockchair.com/ethereum/transactions/blockchair_ethereum_transactions_{current_date}.tsv.gz"
@@ -34,8 +34,8 @@ async def main():
             await dumper.download()
             logger.info("Dump downloaded")
             dump_transactions = dumper.process()
-            logger.info("Processing dump transactions")
-            message_broker.publish_to_queue(dump_transactions, queue_name)
+            logger.info("Publishing to the queue")
+            await message_broker.publish_to_queue(dump_transactions, queue_name)
             logger.info("Published dump to the queue")
             await dumper.set_last_processed_date(current_date)
             current_date = dumper.get_next_date(current_date)

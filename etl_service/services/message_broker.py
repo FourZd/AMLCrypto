@@ -1,4 +1,4 @@
-import pika
+import aio_pika
 from schemas.transaction_schemas import Transaction
 from typing import List
 from core.logger import logger
@@ -19,24 +19,21 @@ class MessageBroker:
         self.password = password
         self.host = host
         self.port = port
-        
+
         self.connection = None
         self.channel = None
 
-    def connect(self) -> None:
+    async def connect(self) -> None:
         """
         Устанавливает соединение с RabbitMQ.
         """
-        credentials = pika.PlainCredentials(self.user, self.password)
-        connection_params = pika.ConnectionParameters(
-            host=self.host,
-            port=self.port,
-            credentials=credentials
+        logger.info("Connecting to RabbitMQ")
+        self.connection = await aio_pika.connect_robust(
+            f"amqp://{self.user}:{self.password}@{self.host}:{self.port}/"
         )
-        self.connection = pika.BlockingConnection(connection_params)
-        self.channel = self.connection.channel()
+        self.channel = await self.connection.channel()
 
-    def publish_to_queue(self, transactions: List['Transaction'], queue_name: str) -> None:
+    async def publish_to_queue(self, transactions: List['Transaction'], queue_name: str) -> None:
         """
         Publishes a batch of transactions to a RabbitMQ queue in JSON format.
 
@@ -47,23 +44,18 @@ class MessageBroker:
             raise RuntimeError("No connection established. Call `connect` first.")
 
         logger.info("Declaring transaction queue")
-        self.channel.queue_declare(queue=queue_name, durable=True)
+        await self.channel.declare_queue(queue_name, durable=True)
 
         logger.info("Serializing transactions to JSON")
         try:
-            # Сериализуем список транзакций в JSON
             transactions_json = json.dumps([json.loads(transaction.json()) for transaction in transactions])
             logger.info("Publishing transactions batch to MQ")
-            self.channel.basic_publish(exchange='', routing_key=queue_name, body=transactions_json)
+
+            await self.channel.default_exchange.publish(
+                aio_pika.Message(body=transactions_json.encode('utf-8')),
+                routing_key=queue_name
+            )
+
             logger.info("Batch published successfully!")
         except Exception as e:
             logger.error(f"Failed to publish transactions batch: {e}")
-                
-    def close_connection(self) -> None:
-        """
-        Закрывает соединение с RabbitMQ.
-        """
-        if self.connection:
-            self.connection.close()
-            self.connection = None
-            self.channel = None

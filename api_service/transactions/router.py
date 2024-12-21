@@ -10,7 +10,17 @@ router = APIRouter(
 )
 
 
+@router.get("/stats/", response_model=GetTransactionStatsResponse)
+@inject
+async def get_transaction_stats(
+    tx_service: TransactionService = Depends(Provide[Container.transaction_service])
+):
+    stats = await tx_service.get_transaction_stats()
+    return GetTransactionStatsResponse(data=stats)
+
+
 @router.get("/{transaction_hash:str}/", response_model=GetTransactionResponse)
+@inject
 async def get_transaction(
     transaction_hash: str, tx_service: TransactionService = Depends(Provide[Container.transaction_service])
 ):
@@ -22,6 +32,7 @@ async def get_transaction(
 
 
 @router.get("/", response_model=GetTransactionsResponse)
+@inject
 async def get_transactions(
     block_id: int = Query(None, ge=1),
     sender: str = Query(None),
@@ -37,9 +48,3 @@ async def get_transactions(
     return GetTransactionsResponse(data=transactions, count=count)
 
 
-@router.get("/stats/", response_model=GetTransactionStatsResponse)
-async def get_transaction_stats(
-    tx_service: TransactionService = Depends(Provide[Container.transaction_service])
-):
-    stats = await tx_service.get_transaction_stats()
-    return GetTransactionStatsResponse(data=stats)
