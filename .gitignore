@@ -51,3 +51,5 @@ api_service/alembic/versions/__pycache__/a664a1da91a9_alt_value_and_fee_to_strin
 tx_consumer_service/__pycache__/mappers.cpython-312.pyc
 api_service/core/__pycache__/cache_decorator.cpython-312.pyc
 api_service/core/__pycache__/cache_serializer.cpython-312.pyc
+tx_consumer_service/core/__pycache__/environment.cpython-312.pyc
+tx_consumer_service/core/__pycache__/logger.cpython-312.pyc

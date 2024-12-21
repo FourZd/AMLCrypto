@@ -26,7 +26,7 @@ class TransactionRepository(BaseRepository):
 
             paginated_query = base_query.limit(limit).offset(offset).order_by(Transaction.id.desc())
             result = await session.execute(paginated_query)
-            transaction_entities = await result.scalars().all()
+            transaction_entities = result.scalars().all()
 
             transactions = [TransactionMapper.from_orm_to_schema(tx) for tx in transaction_entities]
 
