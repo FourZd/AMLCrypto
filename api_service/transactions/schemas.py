@@ -22,6 +22,7 @@ class TransactionSchema(BaseModel):
     nonce: int
 
     class Config:
+        orm_mode = True
         json_encoders = {
             datetime: lambda v: v.isoformat(),
         }
@@ -31,6 +32,8 @@ class TransactionStatsSchema(BaseModel):
     total_transactions: int
     average_gas_price: Decimal
 
+    class Config:
+        orm_mode = True
 
 class GetTransactionResponse(StatusOkSchema):
     data: TransactionSchema

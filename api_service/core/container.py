@@ -6,6 +6,7 @@ from core.redis_client import RedisPool
 from transactions.repositories import TransactionRepository
 from transactions.services import TransactionService
 
+
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
         modules=[

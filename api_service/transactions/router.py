@@ -3,6 +3,8 @@ from dependency_injector.wiring import Provide, inject
 from core.container import Container
 from .schemas import GetTransactionsResponse, GetTransactionStatsResponse, GetTransactionResponse
 from .services import TransactionService
+from aiocache import cached
+
 
 router = APIRouter(
     prefix="/transactions",
@@ -12,6 +14,7 @@ router = APIRouter(
 
 @router.get("/stats/", response_model=GetTransactionStatsResponse)
 @inject
+@cached(ttl=60)
 async def get_transaction_stats(
     tx_service: TransactionService = Depends(Provide[Container.transaction_service])
 ):
@@ -21,6 +24,7 @@ async def get_transaction_stats(
 
 @router.get("/{transaction_hash:str}/", response_model=GetTransactionResponse)
 @inject
+@cached(ttl=120, key_builder=lambda f, *args, **kwargs: f"transaction_{kwargs['transaction_hash']}")
 async def get_transaction(
     transaction_hash: str, tx_service: TransactionService = Depends(Provide[Container.transaction_service])
 ):
@@ -33,6 +37,7 @@ async def get_transaction(
 
 @router.get("/", response_model=GetTransactionsResponse)
 @inject
+@cached(ttl=300, key_builder=lambda f, *args, **kwargs: f"transactions_{kwargs['block_id']}_{kwargs['sender']}_{kwargs['recipient']}_{kwargs['limit']}_{kwargs['offset']}")
 async def get_transactions(
     block_id: int = Query(None, ge=1),
     sender: str = Query(None),
