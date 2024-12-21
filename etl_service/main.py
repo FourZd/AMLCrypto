@@ -6,6 +6,7 @@ from core.environment import env
 from core.logger import logger
 from core.redis_client import RedisPool
 
+
 async def main():
     redis_pool = RedisPool(f"redis://:{env.REDIS_PASSWORD}@{env.REDIS_HOST}:{env.REDIS_PORT}/{env.REDIS_DB}")
 
@@ -25,10 +26,11 @@ async def main():
     )
     message_broker.connect()
     
-    for _ in range(2):  # Только два дампа для отладки
+    for _ in range(2):
         dump_url = f"https://gz.blockchair.com/ethereum/transactions/blockchair_ethereum_transactions_{current_date}.tsv.gz"
         try:
             dumper.dump_url = dump_url
+            logger.info(f"Downloading dump for date {current_date}")
             await dumper.download()
             logger.info("Dump downloaded")
             dump_transactions = dumper.process()

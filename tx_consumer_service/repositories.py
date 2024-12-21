@@ -3,6 +3,7 @@ from schemas import Transaction as TransactionSchema
 from typing import List
 from models import Transaction
 from sqlalchemy.future import select
+from mappers import TransactionMapper
 
 
 class TransactionRepository(BaseRepository):
@@ -25,7 +26,9 @@ class TransactionRepository(BaseRepository):
         async with self.get_session() as session:
             async with session.begin():
                 for transaction in transactions:
-                    session.add(Transaction(**transaction.dict()))
+                    session.add(
+                        TransactionMapper.from_schema_to_orm(transaction)
+                    )
 
 
 def repository_factory(session_factory):

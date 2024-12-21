@@ -47,12 +47,12 @@ class MessageBroker:
             raise RuntimeError("No connection established. Call `connect` first.")
 
         logger.info("Declaring transaction queue")
-        self.channel.queue_declare(queue=queue_name)
+        self.channel.queue_declare(queue=queue_name, durable=True)
 
         logger.info("Serializing transactions to JSON")
         try:
             # Сериализуем список транзакций в JSON
-            transactions_json = json.dumps([transaction.json() for transaction in transactions])
+            transactions_json = json.dumps([json.loads(transaction.json()) for transaction in transactions])
             logger.info("Publishing transactions batch to MQ")
             self.channel.basic_publish(exchange='', routing_key=queue_name, body=transactions_json)
             logger.info("Batch published successfully!")
