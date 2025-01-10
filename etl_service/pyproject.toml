@@ -5,6 +5,7 @@ description = "Etl microservice for parsing tx data from dumps & realtime from b
 authors = ["FourZd <shogo.ryaskov@gmail.com>"]
 readme = "README.md"
 packages = [{include = "etl_service"}]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
